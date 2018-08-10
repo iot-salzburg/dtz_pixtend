@@ -39,13 +39,13 @@ class ConveyorBeltXResource:
                 def relay_pin(state):                   # OUTPUT pin for the RELAY
                     pixtend.digitalout3(state)      
               
-                RELAY(OFF)                              # switch off POWER-RELAY
+                relay_pin(OFF)                              # switch off POWER-RELAY
 
 
 
                 # set PWM registers
                 pixtend.pwm0a(250)                      # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
-                                                        #         16 Mhz      / 2 /    64      /      500       = 500Hz
+                                                        #         16 Mhz       / 2 /    64     /      250       = 500Hz
                 
                 pixtend.pwm0_ctrl(0b00011011)           # Channel A & B deactivated, Frequency Mode activated, Prescaler at 64
                                                         # Bit 0 - Mode0         0
@@ -95,7 +95,7 @@ class ConveyorBeltXResource:
                 self.write_state(self.state)
                 pixtend.pwm0_ctrl(0b00011011)           # PWM Channels A & B - OFF
                 relay_pin(OFF)
-                sel.pi.stop()
+                self.pi.stop()
 
             def wait_for_it(self, time):
                 init_state = self.state
