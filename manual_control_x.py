@@ -8,4 +8,4 @@
 from ConveyorBeltX import ConveyorBeltX
 
 conbeltx = ConveyorBeltX()
-conbeltx.manual_control()
+conbeltx.manual_control(0)
