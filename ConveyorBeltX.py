@@ -5,10 +5,6 @@
 # The electronic layout is from the tutorial:
 # https://www.rototron.info/raspberry-pi-stepper-motor-tutorial/
 
-from time import sleep
-from multiprocessing import Process
-
-
 # Resource Package - so that the Class could only be used with the "with" statement
 # if an exception occurs the __exit__ function is called and calls the close function of the Pixtend Object
 
@@ -17,7 +13,7 @@ class ConveyorBeltX:
         self.state = "init"
         self.distance = 0.0
         try:
-            import time
+            from time import sleep
             from multiprocessing import Process
             from pixtendv2s import PiXtendV2S
         except ModuleNotFoundError:
@@ -29,26 +25,11 @@ class ConveyorBeltX:
         pixtend.gpio_pullups_enable = True
         pixtend.gpio0_ctrl = 0
         pixtend.gpio1_ctrl = 0
-
+        print ("initialising...")
 
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
         ON = pixtend.ON
         OFF = pixtend.OFF
-
-        def dir_pin(state):                     # OUTPUT Pin for the motor controller - movement direction
-            pixtend.digital_out0 = state
-        def left_pin():
-            print("left pin was pressed")      # INPUT pin for left direction button
-            return pixtend.gpio0
-        def right_pin():                        # INPUT pin for right direction button
-            return pixtend.gpio1
-        def relay_pin(state):                   # OUTPUT pin for the RELAY
-            pixtend.digital_out3 = state
-
-        relay_pin(OFF)                              # switch off POWER-RELAY
-
-        self.package_obj = ConveyorBeltX()
-        return self.package_obj
 
         # set PWM registers
         pixtend.pwm0a(250)                      # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
@@ -80,28 +61,28 @@ class ConveyorBeltX:
     def move_left(self, distance=0):
         self.state = "left"
         self.write_state(self.state)
-        relay_pin(ON)
+        pixtend.digital_out3 = True             # RELAY ON
         pixtend.pwm0_ctrl(0b01111011)           # PWM Channels A & B - ON
-        dir_pin(ON)
+        pixtend.digital_out0 = True             # Direction = Left
 
     def move_right(self, distance = 0):
         self.state = "right"
         self.write_state(self.state)
-        relay_pin(ON)
+        pixtend.digital_out3 = True             # RELAY ON
         pixtend.pwm0_ctrl(0b01111011)           # PWM Channels A & B - ON
-        dir_pin(OFF)
+        pixtend.digital_out0 = False            # Direction = Right
 
     def halt(self):
         self.state = "halt"
         self.write_state(self.state)
-        relay_pin(OFF)
+        pixtend.digital_out3 = False            # RELAY OFF
         pixtend.pwm0_ctrl(0b00011011)           # PWM Channels A & B - OFF
 
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
         pixtend.pwm0_ctrl(0b00011011)           # PWM Channels A & B - OFF
-        relay_pin(OFF)
+        pixtend.digital_out3 = False            # RELAY OFF
         self.pi.stop()
 
     def wait_for_it(self, time):
@@ -140,11 +121,11 @@ class ConveyorBeltX:
             try:
                 while True:
                     oldstate = self.state
-                    if self.btn_is_left():
+                    if pixtend.gpio0:
                         self.move_left()
                         self.distance += 0.1*self.velocity
                         self.write_distance(self.distance)
-                    elif self.btn_is_right():
+                    elif pixtend.gpio1:
                         self.move_right()
                         self.distance -= 0.1*self.velocity
                         self.write_distance(self.distance)
