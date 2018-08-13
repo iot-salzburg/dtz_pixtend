@@ -30,8 +30,6 @@ class ConveyorBeltX:
         self.pixtend.gpio1 = True
         self.pixtend.gpio0 = True
 
-        print ("initialising...")
-
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
 
