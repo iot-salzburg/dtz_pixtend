@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Salzburg Research ForschungsgesmbH
 # Christoph Schranz & Armin Niedermueller
 
@@ -6,7 +5,7 @@
 # The electronic layout is from the tutorial:
 # https://www.rototron.info/raspberry-pi-stepper-motor-tutorial/
 
-from ConveyorBeltX import ConveyorBeltXResource
+from ConveyorBeltX import ConveyorBeltX
 
-with ConveyorBeltXResource() as conbelt:
-    conbelt.manual_control()
+conbeltx = ConveyorBeltX()
+conbeltx.manual_control()
