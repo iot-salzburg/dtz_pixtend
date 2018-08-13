@@ -117,8 +117,12 @@ class ConveyorBeltX:
         waiting = Process(target=self.wait_for_it, args=(time,))
         waiting.start()
 
+    def manual_control(self, showstate):
+        self.showstate = showstate
+        manual = Process(target=self.manual_control_core(), args=())
+        manual.start()
 
-    def manual_control(self):
+    def manual_control_core(self):
         try:
             while True:
                 oldstate = self.state
