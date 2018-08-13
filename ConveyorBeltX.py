@@ -8,47 +8,49 @@
 # Resource Package - so that the Class could only be used with the "with" statement
 # if an exception occurs the __exit__ function is called and calls the close function of the Pixtend Object
 
+from time import sleep
+from multiprocessing import Process
+from pixtendv2s import PiXtendV2S
+
+
+
 class ConveyorBeltX:
     def __init__(self):
         self.state = "init"
         self.distance = 0.0
-        try:
-            from time import sleep
-            from multiprocessing import Process
-            from pixtendv2s import PiXtendV2S
-        except ModuleNotFoundError:
-            raise "Module not found."
-
 
         # PiXtend Control Object
-        pixtend = PiXtendV2S()
-        pixtend.gpio_pullups_enable = True
-        pixtend.gpio0_ctrl = 0
-        pixtend.gpio1_ctrl = 0
+        self.pixtend = PiXtendV2S()
+        self.pixtend.gpio_pullups_enable = True
+        self.pixtend.gpio0_ctrl = 0
+        self.pixtend.gpio1_ctrl = 0
+        self.pixtend.gpio2_ctrl = 0
+        self.pixtend.gpio3_ctrl = 0
+        self.pixtend.gpio1 = True
+        self.pixtend.gpio0 = True
+
         print ("initialising...")
 
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
-        ON = pixtend.ON
-        OFF = pixtend.OFF
 
-        # set PWM registers
-        pixtend.pwm0a(250)                      # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
-                                                #         16 Mhz       / 2 /    64     /      250       = 500Hz
 
-        pixtend.pwm0_ctrl(0b00011011)           # Channel A & B deactivated, Frequency Mode activated, Prescaler at 64
-                                                # Bit 0 - Mode0         0
+
+
+        self.pixtend.pwm0_ctrl0 = 0b01111011    # Channel A & B deactivated, Frequency Mode activated, Prescaler at 64
+                                                # Bit 0 - Mode0         1 <-
                                                 # Bit 1 - Mode1         1 <-
+                                                # Bit 2 - Dummy         0
                                                 # Bit 3 - EnableA       0
                                                 # Bit 4 - EnableB       0
-                                                # Bit 5 - Prescaler0    0
+                                                # Bit 5 - Prescaler0    1 <-
                                                 # Bit 6 - Prescaler1    1 <-
-                                                # Bit 7 - Prescaler2    1 <-
+                                                # Bit 7 - Prescaler2    0
 
-    def btn_is_left(self):
-        return not left_pin()
+        # set PWM registers
+        self.pixtend.pwm0a = 120
+        self.pixtend.pwm0b = 120                # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
+                                                #         16 Mhz       / 2 /    64     /      250       = 500Hz
 
-    def btn_is_right(self):
-        return not right_pin()
 
     def write_state(self, state):
         with open("state.log", "w") as f:
@@ -58,32 +60,31 @@ class ConveyorBeltX:
         with open("distance.log", "w") as f:
             f.write(str(distance))
 
-    def move_left(self, distance=0):
+    def move_left(self, distance = 0):
         self.state = "left"
         self.write_state(self.state)
-        pixtend.digital_out3 = True             # RELAY ON
-        pixtend.pwm0_ctrl(0b01111011)           # PWM Channels A & B - ON
-        pixtend.digital_out0 = True             # Direction = Left
+        self.pixtend.digital_out3 = True             # RELAY ON
+        self.pixtend.pwm0_ctrl0 = 0b01111011          # PWM Channel B - ON
+        self.pixtend.digital_out0 = True             # Direction = Left
 
     def move_right(self, distance = 0):
         self.state = "right"
         self.write_state(self.state)
-        pixtend.digital_out3 = True             # RELAY ON
-        pixtend.pwm0_ctrl(0b01111011)           # PWM Channels A & B - ON
-        pixtend.digital_out0 = False            # Direction = Right
+        self.pixtend.digital_out3 = True             # RELAY ON
+        self.pixtend.pwm0_ctrl0 = 0b01111011          # PWM Channel B - ON
+        self.pixtend.digital_out0 = False            # Direction = Right
 
     def halt(self):
         self.state = "halt"
         self.write_state(self.state)
-        pixtend.digital_out3 = False            # RELAY OFF
-        pixtend.pwm0_ctrl(0b00011011)           # PWM Channels A & B - OFF
+        self.pixtend.digital_out3 = False            # RELAY OFF
+        self.pixtend.pwm0_ctrl0 = 0b01100011          # PWM Channels A & B - OFF
 
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
-        pixtend.pwm0_ctrl(0b00011011)           # PWM Channels A & B - OFF
-        pixtend.digital_out3 = False            # RELAY OFF
-        self.pi.stop()
+        self.pixtend.pwm0_ctrl0 = 0b01100011          # PWM Channels A & B - OFF
+        self.pixtend.digital_out3 = False            # RELAY OFF
 
     def wait_for_it(self, time):
         init_state = self.state
@@ -117,31 +118,27 @@ class ConveyorBeltX:
         waiting.start()
 
 
-        def manual_control_core(self):
-            try:
-                while True:
-                    oldstate = self.state
-                    if pixtend.gpio0:
-                        self.move_left()
-                        self.distance += 0.1*self.velocity
-                        self.write_distance(self.distance)
-                    elif pixtend.gpio1:
-                        self.move_right()
-                        self.distance -= 0.1*self.velocity
-                        self.write_distance(self.distance)
-                    else:
-                        self.halt()
-                    if oldstate != self.state:
-                        print(self.state)
+    def manual_control(self):
+        try:
+            while True:
+                oldstate = self.state
+                if not self.pixtend.gpio0:
+                    self.move_left()
+                    self.distance += 0.1*self.velocity
+                    self.write_distance(self.distance)
+                elif not self.pixtend.gpio1:
+                    self.move_right()
+                    self.distance -= 0.1*self.velocity
+                    self.write_distance(self.distance)
+                else:
+                    self.halt()
+                if oldstate != self.state:
+                    print(self.state)
 
-                    sleep(.1)
+                sleep(.1)
 
-            except KeyboardInterrupt:
-                print("\nCtrl-C pressed.  Stopping PIGPIO and exiting...")
-            finally:
-                pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
-                pxitend = None 
-                self.stop()
-
-
-
+        except KeyboardInterrupt:
+            print("\nCtrl-C pressed.  Stopping PIGPIO and exiting...")
+        finally:
+            self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
+            self.pixtend = None
