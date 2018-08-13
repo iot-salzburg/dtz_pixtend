@@ -137,7 +137,7 @@ class ConveyorBeltX:
                     self.write_distance(self.distance)
                 else:
                     self.halt()
-                if oldstate != self.state && self.showstate == 1:
+                if oldstate != self.state and self.showstate == 1:
                     print(self.state)
 
                 sleep(.1)
