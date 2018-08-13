@@ -16,6 +16,7 @@ from pixtendv2s import PiXtendV2S
 
 class ConveyorBeltX:
     def __init__(self):
+        self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
 
@@ -136,7 +137,7 @@ class ConveyorBeltX:
                     self.write_distance(self.distance)
                 else:
                     self.halt()
-                if oldstate != self.state:
+                if oldstate != self.state && self.showstate == 1:
                     print(self.state)
 
                 sleep(.1)
