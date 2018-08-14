@@ -16,26 +16,36 @@ from pixtendv2s import PiXtendV2S
 
 class ConveyorBeltX:
     def __init__(self):
+        
         self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
 
         # PiXtend Control Object
         self.pixtend = PiXtendV2S()
+        
+        # Enable Pull Up Resistors at GPIOs 
         self.pixtend.gpio_pullups_enable = True
+        
+        # Configure the GPIOs as Input
         self.pixtend.gpio0_ctrl = 0
         self.pixtend.gpio1_ctrl = 0
         self.pixtend.gpio2_ctrl = 0
         self.pixtend.gpio3_ctrl = 0
+        
+        # Switch the GPIOs 1 & 2 to HIGH (Pull Up)
         self.pixtend.gpio1 = True
         self.pixtend.gpio0 = True
-
+        
+        # Red light OFF & Green light ON
+        self.pixtend.relay0 = False  
+        
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
 
 
 
-        self.pixtend.pwm0_ctrl0 = 0b01111011    # Channel A & B deactivated, Frequency Mode activated, Prescaler at 64
+        self.pixtend.pwm0_ctrl0 = 0b01100011    # Channel A & B deactivated, Frequency Mode activated, Prescaler at 64
                                                 # Bit 0 - Mode0         1 <-
                                                 # Bit 1 - Mode1         1 <-
                                                 # Bit 2 - Dummy         0
@@ -46,9 +56,8 @@ class ConveyorBeltX:
                                                 # Bit 7 - Prescaler2    0
 
         # set PWM registers
-        self.pixtend.pwm0a = 120
-        self.pixtend.pwm0b = 120                # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
-                                                #         16 Mhz       / 2 /    64     /      250       = 500Hz
+        self.pixtend.pwm0a = 125                # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
+        self.pixtend.pwm0b = 125                #         16 Mhz       / 2 /    64     /      125       = 1000Hz
 
 
     def write_state(self, state):
@@ -63,27 +72,31 @@ class ConveyorBeltX:
         self.state = "left"
         self.write_state(self.state)
         self.pixtend.digital_out3 = True             # RELAY ON
-        self.pixtend.pwm0_ctrl0 = 0b01111011          # PWM Channel B - ON
+        self.pixtend.pwm0_ctrl0 = 0b01111011         # PWM Channel A & B - ON
         self.pixtend.digital_out0 = True             # Direction = Left
+        self.pixtend.relay0 = True                   # Red light ON & Green light OFF
 
     def move_right(self, distance = 0):
         self.state = "right"
         self.write_state(self.state)
         self.pixtend.digital_out3 = True             # RELAY ON
-        self.pixtend.pwm0_ctrl0 = 0b01111011          # PWM Channel B - ON
+        self.pixtend.pwm0_ctrl0 = 0b01111011         # PWM Channel B - ON
         self.pixtend.digital_out0 = False            # Direction = Right
+        self.pixtend.relay0 = True                   # Red light ON & Green light OFF
 
     def halt(self):
         self.state = "halt"
         self.write_state(self.state)
         self.pixtend.digital_out3 = False            # RELAY OFF
-        self.pixtend.pwm0_ctrl0 = 0b01100011          # PWM Channels A & B - OFF
-
+        self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
+        self.pixtend.relay0 = False                  # Red light OFF & Green light ON
+        
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
-        self.pixtend.pwm0_ctrl0 = 0b01100011          # PWM Channels A & B - OFF
+        self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.digital_out3 = False            # RELAY OFF
+        self.pixtend.relay0 = False                  # Red light OFF & Green light ON
 
     def wait_for_it(self, time):
         init_state = self.state
