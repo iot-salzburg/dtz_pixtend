@@ -11,7 +11,7 @@ import time
 
 server = Server()
 
-url = "opc.tcp://192.168.48.44:4840"
+url = "opc.tcp://192.168.48.42:4840"
 server.set_endpoint(url)
 
 # Add name to the address space     # setup our own namespace, not really necessary but should as spec
