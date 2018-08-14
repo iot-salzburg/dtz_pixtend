@@ -1,7 +1,7 @@
 # Salzburg Research ForschungsgesmbH
 # Christoph Schranz & Armin Niedermueller
 
-# OPC UA Server
+# OPC UA Server on PiXtend
 
 
 from opcua import Server
