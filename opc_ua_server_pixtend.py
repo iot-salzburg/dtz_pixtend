@@ -33,29 +33,24 @@ server.set_endpoint(url)
 
 # Add name to the address space
 name = "opc_ua_server_pixtend"   
-addspace = server.register_namespace(name)
+idx = server.register_namespace(name)
 
 # get Objects node, this is where we should put our nodes
 objects = server.get_objects_node()
 
 
-# testing....
-freeopcua_namespace = self.server.get_namespace_index("urn:freeopcua:python:server")
-belt_mover = objects.get_child("0:belt_mover")
+# Add objects to the address space
+Params = objects.add_object(idx, "Parameters")
+Methods = objects.add_object(idx, "Methods")
 
 
-belt_mover.add_method(
-   freeopcua_namespace, "belt_mover",  move_belt, [ua.VariantType.Double], [ua.VariantType.Boolean])
-
-
-
-# Add a parameter object to the address space
-Params = objects.add_object(addspace, "Parameters")
+# Method Node to move conveyor belt
+move_node = Methods.add_method(idx, "move_belt", move_belt, [inarg_dir, inarg_dist], [outarg])
 
 # Parameters - Addresspsace, Name, Initial Value
-ConBeltState = Params.add_variable(addspace, "Conveyor Belt - State", "init")
-ConBeltDistance = Params.add_variable(addspace, "Conveyor Belt - Distance", 0.0)
-Time = Params.add_variable(addspace, "Time", 0)
+ConBeltState = Params.add_variable(idx, "Conveyor Belt - State", "init")
+ConBeltDistance = Params.add_variable(idx, "Conveyor Belt - Distance", 0.0)
+Time = Params.add_variable(idx, "Time", 0)
 
 # Set parameters writable by clients
 Time.set_writable()
