@@ -68,7 +68,7 @@ outarg_bool.ArrayDimensions = []
 outarg_bool.Description = ua.LocalizedText("True or false")
 
 # Method Node to move conveyor belt
-move_node = Methods.add_method(idx, "move_belt", move_belt, [inarg_dir, inarg_dist], [outarg])
+move_node = Methods.add_method(idx, "move_belt", move_belt, [inarg_dir, inarg_dist], [outarg_bool])
 
 # Parameters - Addresspsace, Name, Initial Value
 ConBeltState = Params.add_variable(idx, "Conveyor Belt - State", "init")
