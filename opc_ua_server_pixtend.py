@@ -4,36 +4,60 @@
 # OPC UA Server on PiXtend
 
 
-from opcua import Server
+from opcua import ua, uamethod, Server
 from random import randint
 import datetime
 import time
+from ConveyorBeltX import ConveyorBeltX
 
+
+conbelt = ConveyorBeltX()
+
+@uamethod
+def move_belt(parent, direction, distance):
+    if direction == "right":
+        conbelt.move_right_for(distance)
+        return true
+    elif direction == "left":
+        conbelt.move_left_for(distance)
+        return true
+    else:
+       return false
+
+# our server object
 server = Server()
 
-url = "opc.tcp://192.168.48.42:4840"
+# server address
+url = "opc.tcp://localhost:4840/freeopcua/server"
 server.set_endpoint(url)
 
-# Add name to the address space     # setup our own namespace, not really necessary but should as spec
-name = "OPCUA_SIMULATION_SERVER"
+# Add name to the address space
+name = "opc_ua_server_pixtend"   
 addspace = server.register_namespace(name)
 
 # get Objects node, this is where we should put our nodes
-node = server.get_objects_node()
+objects = server.get_objects_node()
+
+
+# testing....
+freeopcua_namespace = self.server.get_namespace_index("urn:freeopcua:python:server")
+belt_mover = objects.get_child("0:belt_mover")
+
+
+belt_mover.add_method(
+   freeopcua_namespace, "belt_mover",  move_belt, [ua.VariantType.Double], [ua.VariantType.Boolean])
+
+
 
 # Add a parameter object to the address space
-Param = node.add_object(addspace, "Parameters")
+Params = objects.add_object(addspace, "Parameters")
 
 # Parameters - Addresspsace, Name, Initial Value
-Temp = Param.add_variable(addspace, "Temperature", 0)
-Press = Param.add_variable(addspace, "Pressure", 0)
-ConBeltState = Param.add_variable(addspace, "Conveyor Belt - State", "init")
-ConBeltDistance = Param.add_variable(addspace, "Conveyor Belt - Distance", 0.0)
-Time = Param.add_variable(addspace, "Time", 0)
+ConBeltState = Params.add_variable(addspace, "Conveyor Belt - State", "init")
+ConBeltDistance = Params.add_variable(addspace, "Conveyor Belt - Distance", 0.0)
+Time = Params.add_variable(addspace, "Time", 0)
 
 # Set parameters writable by clients
-Temp.set_writable()
-Press.set_writable()
 Time.set_writable()
 ConBeltState.set_writable()
 

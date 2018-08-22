@@ -68,7 +68,7 @@ class ConveyorBeltX:
         with open("distance.log", "w") as f:
             f.write(str(distance))
 
-    def move_left(self, distance = 0):
+    def move_left(self):
         self.state = "left"
         self.write_state(self.state)
         self.pixtend.digital_out3 = True             # RELAY ON
@@ -76,7 +76,7 @@ class ConveyorBeltX:
         self.pixtend.digital_out0 = True             # Direction = Left
         self.pixtend.relay0 = True                   # Red light ON & Green light OFF
 
-    def move_right(self, distance = 0):
+    def move_right(self):
         self.state = "right"
         self.write_state(self.state)
         self.pixtend.digital_out3 = True             # RELAY ON
