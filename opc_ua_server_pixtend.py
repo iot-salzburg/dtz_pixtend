@@ -15,10 +15,10 @@ conbelt = ConveyorBeltX()
 
 @uamethod
 def move_belt(parent, direction, distance):
-    if direction == "right":
+    if direction:
         conbelt.move_right_for(distance)
         return true
-    elif direction == "left":
+    elif not direction:
         conbelt.move_left_for(distance)
         return true
     else:
@@ -43,6 +43,29 @@ objects = server.get_objects_node()
 Params = objects.add_object(idx, "Parameters")
 Methods = objects.add_object(idx, "Methods")
 
+# I - In and Output Arguments from the Belt Move Method
+inarg_dir = ua.Argument()
+inarg_dir.Name = "direction"
+inarg_dir.DataType = ua.NodeId(ua.ObjectIds.Boolean)
+inarg_dir.ValueRank = -1
+inarg_dir.ArrayDimensions = []
+inarg_dir.Description = ua.LocalizedText("direction to drive")
+
+# II
+inarg_dist = ua.Argument()
+inarg_dist.Name = "distance"
+inarg_dist.DataType = ua.NodeId(ua.ObjectIds.Double)
+inarg_dist.ValueRank = -1
+inarg_dist.ArrayDimensions = []
+inarg_dist.Description = ua.LocalizedText("belt distance to drive")
+
+# III
+outarg_bool = ua.Argument()
+outarg_bool.Name = "result"
+outarg_bool.DataType = ua.NodeId(ua.ObjectIds.Boolean)
+outarg_bool.ValueRank = -1
+outarg_bool.ArrayDimensions = []
+outarg_bool.Description = ua.LocalizedText("True or false")
 
 # Method Node to move conveyor belt
 move_node = Methods.add_method(idx, "move_belt", move_belt, [inarg_dir, inarg_dist], [outarg])
