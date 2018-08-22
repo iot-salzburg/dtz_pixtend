@@ -83,8 +83,8 @@ void RunServer()
 
 
   // Now write values to address space and send events so clients can have some fun
-  conbelt_state.SetValue(Variant("init")); //will change value and trigger datachange event
-  conbelt_distance.SetValue(Variant(0.0)); 
+  //conbelt_state.SetValue(Variant("init")); //will change value and trigger datachange event
+  //conbelt_distance.SetValue(Variant(0.0)); 
 
   // Create event
   server.EnableEventNotification();
@@ -95,9 +95,9 @@ void RunServer()
   ev.Time = DateTime::Current();
 
   // define filestreams
-  std::ifstream statefile("state.log");
-  std::ifstream distancefile ("distance.log");
-  std::string line;
+  //std::ifstream statefile("state.log");
+  //std::ifstream distancefile ("distance.log");
+  //std::string line;
 
   logger->info("Ctrl-C to exit");
 
@@ -105,29 +105,29 @@ void RunServer()
     {
 
 	  // read conbelt_state from file and set value inside our object
-	  getline(statefile, line);
-      conbelt_state.SetValue(Variant(line));		// will change value and trigger datachange event
+	  //getline(statefile, line);
+      //conbelt_state.SetValue(Variant(line));		// will change value and trigger datachange event
 
 
 	  // read conbelt_distance from file and set value inside our object
-	  getline(distancefile, line);
-	  std::string::size_type sz;			 
-	  double distance = std::stod(line, &sz);	
-	  conbelt_distance.SetValue(Variant(distance)); // will change value and trigger datachange event
+	  //getline(distancefile, line);
+	  //std::string::size_type sz;			 
+	  //double distance = std::stod(line, &sz);	
+	  //conbelt_distance.SetValue(Variant(distance)); // will change value and trigger datachange event
 
 
-      std::stringstream ss;
-	  ss << "This is an conbelt_state change event";
-      ev.Message = LocalizedText(ss.str());
-      server.TriggerEvent(ev);
+	  //std::stringstream ss;
+	  //ss << "This is an conbelt_state change event";
+      //ev.Message = LocalizedText(ss.str());
+      //server.TriggerEvent(ev);
       std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
 
     }
 
   // close filestreams and shut down server
-  statefile.close();
-  distancefile.close();
+  //statefile.close();
+  //distancefile.close();
   server.Stop();
 }
 
