@@ -87,8 +87,6 @@ try:
     # Assign random values to the parameters
     while True:
         # calculate random values
-        Temperature = randint(10,50)  # Assign random value from 10 to 50
-        Pressure = randint(200, 999)
         TIME = datetime.datetime.now()  # current time
         with open("state.log") as f:
             state = f.read()
@@ -96,9 +94,7 @@ try:
             distance = f.read()
 
         # set the random values inside the node
-        print(Temperature, Pressure, TIME, state)
-        Temp.set_value(Temperature)
-        Press.set_value(Pressure)
+        print(TIME, state)
         Time.set_value(TIME)
         ConBeltState.set_value(state)
         ConBeltDistance.set_value(distance)
