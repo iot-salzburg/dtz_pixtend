@@ -1,5 +1,5 @@
 # Salzburg Research ForschungsgesmbH
-# Christoph Schranz & Armin Niedermueller
+# Armin Niedermueller
 
 # OPC UA Server on PiXtend
 
