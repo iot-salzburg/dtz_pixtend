@@ -16,30 +16,30 @@ from pixtendv2s import PiXtendV2S
 
 class ConveyorBeltX:
     def __init__(self):
-        
+
         self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
 
         # PiXtend Control Object
         self.pixtend = PiXtendV2S()
-        
-        # Enable Pull Up Resistors at GPIOs 
+
+        # Enable Pull Up Resistors at GPIOs
         self.pixtend.gpio_pullups_enable = True
-        
+
         # Configure the GPIOs as Input
         self.pixtend.gpio0_ctrl = 0
         self.pixtend.gpio1_ctrl = 0
         self.pixtend.gpio2_ctrl = 0
         self.pixtend.gpio3_ctrl = 0
-        
+
         # Switch the GPIOs 1 & 2 to HIGH (Pull Up)
         self.pixtend.gpio1 = True
         self.pixtend.gpio0 = True
-        
+
         # Red light OFF & Green light ON
-        self.pixtend.relay0 = False  
-        
+        self.pixtend.relay0 = False
+
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
 
@@ -90,7 +90,7 @@ class ConveyorBeltX:
         self.pixtend.digital_out3 = False            # RELAY OFF
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.relay0 = False                  # Red light OFF & Green light ON
-        
+
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
@@ -114,20 +114,21 @@ class ConveyorBeltX:
 
             sleep(0.1)
 
-        if not was_interrrupted:
-            self.halt()
-
     def move_left_for(self, distance=0):
         self.move_left()
         time = distance/self.velocity
         waiting = Process(target=self.wait_for_it, args=(time,))
         waiting.start()
+        waiting.join()
+        self.halt()
 
     def move_right_for(self, distance=0):
         self.move_right()
         time = distance/self.velocity
         waiting = Process(target=self.wait_for_it, args=(time,))
         waiting.start()
+        waiting.join()
+        self.halt()
 
     def manual_control(self, showstate):
         self.showstate = showstate
