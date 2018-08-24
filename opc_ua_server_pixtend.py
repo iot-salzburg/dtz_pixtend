@@ -82,7 +82,7 @@ try:
         
         # sleep 2 seconds
         time.sleep(2)
-    except KeyboardInterrupt:
+except KeyboardInterrupt:
         print("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
 finally:
     #close connection, remove subcsriptions, etc
