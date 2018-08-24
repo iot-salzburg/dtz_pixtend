@@ -39,7 +39,7 @@ if __name__ == "__main__":
     server = Server()
     url = "opc.tcp://0.0.0.0:4840/freeopcua/server"
     server.set_endpoint(url)
-    
+
     # setup our own namespace
     uri = "https://github.com/iot-salzburg/dtz_pixtend"
     idx = server.register_namespace(uri)
@@ -49,13 +49,13 @@ if __name__ == "__main__":
     objects = server.get_objects_node()
 
     # Add a parameter object to the address space
-    object_1 = object.add_object(idx, "Object1")
-   
+    object_1 = objects.add_object(idx, "Object1")
+
     # Parameters - Addresspsace, Name, Initial Value
-    Time = myobj.add_variable(idx, "Time", 0)
-    mover = myobj.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.Boolean], [ua.VariantType.Boolean])
-    ConBeltState = Param.add_variable(addspace, "Conveyor Belt - State", "init")
-    ConBeltDistance = Param.add_variable(addspace, "Conveyor Belt - Distance", 0.0)
+    Time = object_1.add_variable(idx, "Time", 0)
+    mover = object_1.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.Boolean], [ua.VariantType.Boolean])
+    ConBeltState = object_1.add_variable(idx, "Conveyor Belt - State", "init")
+    ConBeltDistance = object_1.add_variable(idx, "Conveyor Belt - Distance", 0.0)
 
     # Set parameters writable by clients
     Time.set_writable()
@@ -75,11 +75,11 @@ try:
             distance = f.read()
 
         # set the random values inside the node
-        print(TIME, state, distance)
+        print(state, distance, Time)
         Time.set_value(TIME)
         ConBeltState.set_value(state)
         ConBeltDistance.set_value(distance)
-        
+
         # sleep 2 seconds
         time.sleep(2)
 except KeyboardInterrupt:
@@ -87,4 +87,3 @@ except KeyboardInterrupt:
 finally:
     #close connection, remove subcsriptions, etc
     server.stop()
-
