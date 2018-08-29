@@ -9,37 +9,37 @@
 # if an exception occurs the __exit__ function is called and calls the close function of the Pixtend Object
 
 from time import sleep
-from multiprocessing import Process
+import sys
 from pixtendv2s import PiXtendV2S
-
+import threading
 
 
 class ConveyorBeltX:
     def __init__(self):
-
+        
         self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
 
         # PiXtend Control Object
         self.pixtend = PiXtendV2S()
-
-        # Enable Pull Up Resistors at GPIOs
+        
+        # Enable Pull Up Resistors at GPIOs 
         self.pixtend.gpio_pullups_enable = True
-
+        
         # Configure the GPIOs as Input
         self.pixtend.gpio0_ctrl = 0
         self.pixtend.gpio1_ctrl = 0
         self.pixtend.gpio2_ctrl = 0
         self.pixtend.gpio3_ctrl = 0
-
+        
         # Switch the GPIOs 1 & 2 to HIGH (Pull Up)
         self.pixtend.gpio1 = True
         self.pixtend.gpio0 = True
-
+        
         # Red light OFF & Green light ON
-        self.pixtend.relay0 = False
-
+        self.pixtend.relay0 = False  
+        
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
 
@@ -90,12 +90,13 @@ class ConveyorBeltX:
         self.pixtend.digital_out3 = False            # RELAY OFF
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.relay0 = False                  # Red light OFF & Green light ON
+        print("bleib steh")
 
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
-        self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.digital_out3 = False            # RELAY OFF
+        self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.relay0 = False                  # Red light OFF & Green light ON
 
     def wait_for_it(self, time):
@@ -113,11 +114,12 @@ class ConveyorBeltX:
                 self.write_distance(self.distance)
 
             sleep(0.1)
+        return True
 
     def move_left_for(self, distance=0):
         self.move_left()
         time = distance/self.velocity
-        waiting = Process(target=self.wait_for_it, args=(time,))
+        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(time,))
         waiting.start()
         waiting.join()
         self.halt()
@@ -125,14 +127,13 @@ class ConveyorBeltX:
     def move_right_for(self, distance=0):
         self.move_right()
         time = distance/self.velocity
-        waiting = Process(target=self.wait_for_it, args=(time,))
+        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(time,))
         waiting.start()
         waiting.join()
         self.halt()
 
     def manual_control(self, showstate):
         self.showstate = showstate
-        manual = Process(target=self.manual_control_core(), args=())
         manual.start()
 
     def manual_control_core(self):
@@ -159,3 +160,7 @@ class ConveyorBeltX:
         finally:
             self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
             self.pixtend = None
+
+    def __del__(self):
+        print("died")
+        sys.exit()
