@@ -163,4 +163,3 @@ class ConveyorBeltX:
 
     def __del__(self):
         print("died")
-        sys.exit()
