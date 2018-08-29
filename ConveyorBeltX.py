@@ -1,12 +1,13 @@
+#      _____         __        __                               ____                                        __  
+#     / ___/ ____ _ / /____   / /_   __  __ _____ ____ _       / __ \ ___   _____ ___   ____ _ _____ _____ / /_ 
+#     \__ \ / __ `// //_  /  / __ \ / / / // ___// __ `/      / /_/ // _ \ / ___// _ \ / __ `// ___// ___// __ \
+#    ___/ // /_/ // /  / /_ / /_/ // /_/ // /   / /_/ /      / _, _//  __/(__  )/  __// /_/ // /   / /__ / / / /
+#   /____/ \__,_//_/  /___//_.___/ \__,_//_/    \__, /      /_/ |_| \___//____/ \___/ \__,_//_/    \___//_/ /_/ 
+#                                              /____/                                                           
 # Salzburg Research ForschungsgesmbH
-# Christoph Schranz & Armin Niedermueller
-
-# Conveyor Belt Control - PiXtend
-# The electronic layout is from the tutorial:
-# https://www.rototron.info/raspberry-pi-stepper-motor-tutorial/
-
-# Resource Package - so that the Class could only be used with the "with" statement
-# if an exception occurs the __exit__ function is called and calls the close function of the Pixtend Object
+# Armin Niedermueller & Christoph Schranz
+#
+# class to control a conveyor belt with an stepper motor via the PiXtend Hardware
 
 from time import sleep
 import sys
@@ -59,6 +60,13 @@ class ConveyorBeltX:
         self.pixtend.pwm0a = 125                # Oscillator Frequency / 2 / Prescaler / PWM0A Register = Frequency
         self.pixtend.pwm0b = 125                #         16 Mhz       / 2 /    64     /      125       = 1000Hz
 
+        with open("state.log", "w") as f:
+            f.write(self.state)
+
+
+        with open("distance.log", "w") as f:
+            f.write(str(self.distance))
+
 
     def write_state(self, state):
         with open("state.log", "w") as f:
@@ -90,7 +98,6 @@ class ConveyorBeltX:
         self.pixtend.digital_out3 = False            # RELAY OFF
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         self.pixtend.relay0 = False                  # Red light OFF & Green light ON
-        print("bleib steh")
 
     def stop(self):
         self.state = "stop"
@@ -160,6 +167,3 @@ class ConveyorBeltX:
         finally:
             self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
             self.pixtend = None
-
-    def __del__(self):
-        print("died")
