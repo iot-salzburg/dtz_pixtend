@@ -1,8 +1,16 @@
+#      _____         __        __                               ____                                        __  
+#     / ___/ ____ _ / /____   / /_   __  __ _____ ____ _       / __ \ ___   _____ ___   ____ _ _____ _____ / /_ 
+#     \__ \ / __ `// //_  /  / __ \ / / / // ___// __ `/      / /_/ // _ \ / ___// _ \ / __ `// ___// ___// __ \
+#    ___/ // /_/ // /  / /_ / /_/ // /_/ // /   / /_/ /      / _, _//  __/(__  )/  __// /_/ // /   / /__ / / / /
+#   /____/ \__,_//_/  /___//_.___/ \__,_//_/    \__, /      /_/ |_| \___//____/ \___/ \__,_//_/    \___//_/ /_/ 
+#                                              /____/                                                           
 # Salzburg Research ForschungsgesmbH
 # Armin Niedermueller
 
 # OPC UA Server on PiXtend
-
+# The purpose of this OPCUA server is to provide methods to control the conveyorbelt (stepper motor) and read the state 
+# of the conveyor belt
+# the hardware is PiXtend - Raspberry Pi SPS
 
 import sys
 sys.path.insert(0, "..")
