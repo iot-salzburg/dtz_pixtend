@@ -1,70 +1,97 @@
+#      _____         __        __                               ____                                        __  
+#     / ___/ ____ _ / /____   / /_   __  __ _____ ____ _       / __ \ ___   _____ ___   ____ _ _____ _____ / /_ 
+#     \__ \ / __ `// //_  /  / __ \ / / / // ___// __ `/      / /_/ // _ \ / ___// _ \ / __ `// ___// ___// __ \
+#    ___/ // /_/ // /  / /_ / /_/ // /_/ // /   / /_/ /      / _, _//  __/(__  )/  __// /_/ // /   / /__ / / / /
+#   /____/ \__,_//_/  /___//_.___/ \__,_//_/    \__, /      /_/ |_| \___//____/ \___/ \__,_//_/    \___//_/ /_/ 
+#                                              /____/                                                           
 # Salzburg Research ForschungsgesmbH
 # Armin Niedermueller
 
 # OPC UA Server on PiXtend
+# The purpose of this OPCUA server is to provide methods to control the conveyorbelt (stepper motor) and read the state 
+# of the conveyor belt
+# the hardware is PiXtend - Raspberry Pi SPS
 
-
-from opcua import Server
-from random import randint
-import datetime
+import sys
+sys.path.insert(0, "..")
 import time
 
-server = Server()
+from ConveyorBeltX import ConveyorBeltX
+from opcua import ua, uamethod, Server
+import datetime
+import time
+import threading
 
-url = "opc.tcp://192.168.48.42:4840"
-server.set_endpoint(url)
+conbelt = ConveyorBeltX()
 
-# Add name to the address space     # setup our own namespace, not really necessary but should as spec
-name = "OPCUA_SIMULATION_SERVER"
-addspace = server.register_namespace(name)
+def move_belt_core(direction, distance):
+    if direction == "right":
+        conbelt.move_right_for(distance)
+    elif direction == "left":
+        conbelt.move_left_for(distance)
+    return True
 
-# get Objects node, this is where we should put our nodes
-node = server.get_objects_node()
+@uamethod
+def move_belt(parent, direction, distance):
+    print("move_belt function")
+    move_thread = threading.Thread(name='move_belt_thread', target = move_belt_core, args = (direction, distance,)) 
+    move_thread.daemon = True
+    move_thread.start()
+    return True
 
-# Add a parameter object to the address space
-Param = node.add_object(addspace, "Parameters")
+if __name__ == "__main__":
 
-# Parameters - Addresspsace, Name, Initial Value
-Temp = Param.add_variable(addspace, "Temperature", 0)
-Press = Param.add_variable(addspace, "Pressure", 0)
-ConBeltState = Param.add_variable(addspace, "Conveyor Belt - State", "init")
-ConBeltDistance = Param.add_variable(addspace, "Conveyor Belt - Distance", 0.0)
-Time = Param.add_variable(addspace, "Time", 0)
+    # setup our server
+    server = Server()
+    url = "opc.tcp://0.0.0.0:4840/freeopcua/server"
+    server.set_endpoint(url)
 
-# Set parameters writable by clients
-Temp.set_writable()
-Press.set_writable()
-Time.set_writable()
-ConBeltState.set_writable()
-
-# Start the server
-server.start()
-print("Server started ad {}".format(url))
-
-try:
-    # Assign random values to the parameters
-    while True:
-        # calculate random values
-        Temperature = randint(10,50)  # Assign random value from 10 to 50
-        Pressure = randint(200, 999)
-        TIME = datetime.datetime.now()  # current time
-        with open("state.log") as f:
-            state = f.read()
-        with open("distance.log") as f:
-            distance = f.read()
-
-        # set the random values inside the node
-        print(Temperature, Pressure, TIME, state)
-        Temp.set_value(Temperature)
-        Press.set_value(Pressure)
-        Time.set_value(TIME)
-        ConBeltState.set_value(state)
-        ConBeltDistance.set_value(distance)
-        # sleep 2 seconds
-        time.sleep(2)
+    # setup our own namespace
+    uri = "https://github.com/iot-salzburg/dtz_pixtend"
+    idx = server.register_namespace(uri)
 
 
-finally:
-    #close connection, remove subcsriptions, etc
-    server.stop()
+    # get Objects node, this is where we should put our nodes
+    objects = server.get_objects_node()
 
+    # Add a parameter object to the address space
+    object1 = objects.add_object(idx, "Object1")
+
+    # Parameters - Addresspsace, Name, Initial Value
+    server_time = object1.add_variable(idx, "ServerTime", 0)
+    mover = object1.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
+    conbelt_state = object1.add_variable(idx, "ConBeltState", "init")
+    conbelt_dist = object1.add_variable(idx, "ConBeltDist", 0.0)
+
+    # Set parameters writable by clients
+    server_time.set_writable()
+
+
+    # Start the server
+    server.start()
+    print("OPCUA - Pixtend - Server started at {}".format(url))
+
+    try:
+        # Assign random values to the parameters
+        while True:
+            TIME = datetime.datetime.now()  # current time
+            with open("state.log") as f:
+                state = f.read()
+            with open("distance.log") as f:
+                distance = f.read()
+
+            # set the random values inside the node
+            print("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance) + "   Server-Time: " + str(server_time.get_value()))
+            server_time.set_value(TIME)
+            conbelt_state.set_value(state)
+            conbelt_dist.set_value(distance)
+
+           # sleep 2 seconds
+            time.sleep(2)
+    except KeyboardInterrupt:
+            print("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
+    finally:
+        #close connection, remove subcsriptions, etc
+        server.stop()
+        conbelt = None
+        sys.exit(0)
