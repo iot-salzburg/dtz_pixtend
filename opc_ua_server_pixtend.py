@@ -12,7 +12,7 @@ from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
 import datetime
 import time
-#import threading
+import threading
 
 conbelt = ConveyorBeltX()
 
