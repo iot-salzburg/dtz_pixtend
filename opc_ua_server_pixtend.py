@@ -14,7 +14,6 @@
 
 import sys
 sys.path.insert(0, "..")
-import time
 
 from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
