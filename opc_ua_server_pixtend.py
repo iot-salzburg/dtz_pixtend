@@ -14,6 +14,7 @@
 
 import sys
 sys.path.insert(0, "..")
+import time
 
 from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
@@ -68,6 +69,7 @@ if __name__ == "__main__":
 
     # Start the server
     server.start()
+
     print("OPCUA - Pixtend - Server started at {}".format(url))
 
     try:
@@ -85,7 +87,7 @@ if __name__ == "__main__":
             conbelt_state.set_value(state)
             conbelt_dist.set_value(distance)
 
-           # sleep 2 seconds
+            # sleep 2 seconds
             time.sleep(2)
     except KeyboardInterrupt:
             print("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
