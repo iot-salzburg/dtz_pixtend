@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     # Parameters - Addresspsace, Name, Initial Value
     server_time = conveyorbelt_object.add_variable(idx, "ServerTime", 0)
-    mover = object1.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
+    mover = conveyorbelt_object.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
     conbelt_state = conveyorbelt_object.add_variable(idx, "ConBeltState", "init")
     conbelt_dist = conveyorbelt_object.add_variable(idx, "ConBeltDist", 0.0)
 
