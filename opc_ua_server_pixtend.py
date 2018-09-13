@@ -55,13 +55,13 @@ if __name__ == "__main__":
     objects = server.get_objects_node()
 
     # Add a parameter object to the address space
-    object1 = objects.add_object(idx, "Object1")
+    conveyorbelt_object = objects.add_object(idx, "ConveyorBelt")
 
     # Parameters - Addresspsace, Name, Initial Value
-    server_time = object1.add_variable(idx, "ServerTime", 0)
+    server_time = conveyorbelt_object.add_variable(idx, "ServerTime", 0)
     mover = object1.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
-    conbelt_state = object1.add_variable(idx, "ConBeltState", "init")
-    conbelt_dist = object1.add_variable(idx, "ConBeltDist", 0.0)
+    conbelt_state = conveyorbelt_object.add_variable(idx, "ConBeltState", "init")
+    conbelt_dist = conveyorbelt_object.add_variable(idx, "ConBeltDist", 0.0)
 
     # Set parameters writable by clients
     server_time.set_writable()
