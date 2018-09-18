@@ -46,11 +46,11 @@ if __name__ == "__main__":
         #var.set_value(3.9) # set node value using implicit data type
 
         # Now getting a variable node using its browse path
-        server_time = root.get_child(["0:Objects", "2:Object1", "2:ServerTime"])
-        object1 = root.get_child(["0:Objects", "2:Object1"])
-        mover = root.get_child(["0:Objects", "2:Object1", "2:MoveBelt"])
-        conbelt_state =  root.get_child(["0:Objects", "2:Object1", "2:ConBeltState"])
-        conbelt_dist = root.get_child(["0:Objects", "2:Object1", "2:ConBeltDist"]) 
+        server_time = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ServerTime"])
+        object1 = root.get_child(["0:Objects", "2:ConveyorBelt"])
+        mover = root.get_child(["0:Objects", "2:ConveyorBelt", "2:MoveBelt"])
+        conbelt_state =  root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltState"])
+        conbelt_dist = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltDist"]) 
 
         def move_belt(direction, distance):
             object1.call_method("2:MoveBelt", direction, desired_distance)  # drive 55cm right
