@@ -31,12 +31,18 @@ def move_belt_core(direction, distance):
         conbelt.move_left_for(distance)
     return True
 
+# Method to control the conveyor belt - direction is "right" or "left", distance is float in meters.
 @uamethod
 def move_belt(parent, direction, distance):
-    print("move_belt function")
     move_thread = threading.Thread(name='move_belt_thread', target = move_belt_core, args = (direction, distance,)) 
     move_thread.daemon = True
     move_thread.start()
+    return True
+
+# method for alarm light control - Value busy True means the light should show red, e.g when the robot is running
+@uamethod
+def switch_light(parent, busy):
+        conbelt.busy_light(busy)
     return True
 
 if __name__ == "__main__":
@@ -60,6 +66,7 @@ if __name__ == "__main__":
     # Parameters - Addresspsace, Name, Initial Value
     server_time = conveyorbelt_object.add_variable(idx, "ServerTime", 0)
     mover = conveyorbelt_object.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
+    busy_light = conveyorbelt_object.add_method(idx, "SwitchBusyLight", switch_light, [ua.VariantType.Bool] , [ua.VariantType.Boolean])
     conbelt_state = conveyorbelt_object.add_variable(idx, "ConBeltState", "init")
     conbelt_dist = conveyorbelt_object.add_variable(idx, "ConBeltDist", 0.0)
 
