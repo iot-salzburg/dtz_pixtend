@@ -88,7 +88,7 @@ class ConveyorBeltX:
         self.pixtend.digital_out3 = True             # RELAY ON
         self.pixtend.pwm0_ctrl0 = 0b01111011         # PWM Channel A & B - ON
         self.pixtend.digital_out0 = True             # Direction = Left
-        self.pixtend.relay0 = True                   # Red light ON & Green light OFF
+        #self.pixtend.relay0 = True                   # Red light ON & Green light OFF
 
     def move_right(self):
         self.state = "right"
@@ -96,21 +96,21 @@ class ConveyorBeltX:
         self.pixtend.digital_out3 = True             # RELAY ON
         self.pixtend.pwm0_ctrl0 = 0b01111011         # PWM Channel B - ON
         self.pixtend.digital_out0 = False            # Direction = Right
-        self.pixtend.relay0 = True                   # Red light ON & Green light OFF
+        #self.pixtend.relay0 = True                   # Red light ON & Green light OFF
 
     def halt(self):
         self.state = "halt"
         self.write_state(self.state)
         self.pixtend.digital_out3 = False            # RELAY OFF
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
-        self.pixtend.relay0 = False                  # Red light OFF & Green light ON
+        #self.pixtend.relay0 = False                  # Red light OFF & Green light ON
 
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
         self.pixtend.digital_out3 = False            # RELAY OFF
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
-        self.pixtend.relay0 = False                  # Red light OFF & Green light ON
+        #self.pixtend.relay0 = False                  # Red light OFF & Green light ON
 
     def wait_for_it(self, time):
         init_state = self.state
