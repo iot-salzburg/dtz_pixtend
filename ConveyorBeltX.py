@@ -1,9 +1,9 @@
-#      _____         __        __                               ____                                        __  
-#     / ___/ ____ _ / /____   / /_   __  __ _____ ____ _       / __ \ ___   _____ ___   ____ _ _____ _____ / /_ 
+#      _____         __        __                               ____                                        __
+#     / ___/ ____ _ / /____   / /_   __  __ _____ ____ _       / __ \ ___   _____ ___   ____ _ _____ _____ / /_
 #     \__ \ / __ `// //_  /  / __ \ / / / // ___// __ `/      / /_/ // _ \ / ___// _ \ / __ `// ___// ___// __ \
 #    ___/ // /_/ // /  / /_ / /_/ // /_/ // /   / /_/ /      / _, _//  __/(__  )/  __// /_/ // /   / /__ / / / /
-#   /____/ \__,_//_/  /___//_.___/ \__,_//_/    \__, /      /_/ |_| \___//____/ \___/ \__,_//_/    \___//_/ /_/ 
-#                                              /____/                                                           
+#   /____/ \__,_//_/  /___//_.___/ \__,_//_/    \__, /      /_/ |_| \___//____/ \___/ \__,_//_/    \___//_/ /_/
+#                                              /____/
 # Salzburg Research ForschungsgesmbH
 # Armin Niedermueller & Christoph Schranz
 #
@@ -17,30 +17,30 @@ import threading
 
 class ConveyorBeltX:
     def __init__(self):
-        
+
         self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
 
         # PiXtend Control Object
         self.pixtend = PiXtendV2S()
-        
-        # Enable Pull Up Resistors at GPIOs 
+
+        # Enable Pull Up Resistors at GPIOs
         self.pixtend.gpio_pullups_enable = True
-        
+
         # Configure the GPIOs as Input
         self.pixtend.gpio0_ctrl = 0
         self.pixtend.gpio1_ctrl = 0
         self.pixtend.gpio2_ctrl = 0
         self.pixtend.gpio3_ctrl = 0
-        
+
         # Switch the GPIOs 1 & 2 to HIGH (Pull Up)
         self.pixtend.gpio1 = True
         self.pixtend.gpio0 = True
-        
+
         # Red light OFF & Green light ON
-        self.pixtend.relay0 = False  
-        
+        self.pixtend.relay0 = False
+
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
 
@@ -75,12 +75,13 @@ class ConveyorBeltX:
     def write_distance(self, distance):
         with open("distance.log", "w") as f:
             f.write(str(distance))
-            
+
     def busy_light(self, busy):
-        if state is true:
+        if busy is True:
             self.pixtend.relay0 = True                   # Red light ON & Green light OFF
         else:
             self.pixtend.relay0 = False                  # Red light OF & Green light ON
+        return True
 
     def move_left(self):
         self.state = "left"
