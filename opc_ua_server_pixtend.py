@@ -69,6 +69,7 @@ if __name__ == "__main__":
     busy_light = conveyorbelt_object.add_method(idx, "SwitchBusyLight", switch_light, [ua.VariantType.Boolean] , [ua.VariantType.Boolean])
     conbelt_state = conveyorbelt_object.add_variable(idx, "ConBeltState", "init")
     conbelt_dist = conveyorbelt_object.add_variable(idx, "ConBeltDist", 0.0)
+    conbelt_moving = conveyorbelt_object.add_variable(idx, "ConBeltMoving", False)
 
     # Set parameters writable by clients
     server_time.set_writable()
@@ -87,6 +88,11 @@ if __name__ == "__main__":
                 state = f.read()
             with open("distance.log") as f:
                 distance = f.read()
+
+            if state != "init" and state != "stop" and state != "halt":
+               conbelt_moving.set_value(True)
+            else:
+               conbelt_moving.set_value(False)
 
             # set the random values inside the node
             # print("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance) + "   Server-Time: " + str(server_time.get_value()))
