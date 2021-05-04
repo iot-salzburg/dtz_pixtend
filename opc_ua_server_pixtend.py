@@ -15,6 +15,8 @@
 import sys
 sys.path.insert(0, "..")
 import time
+import logging
+import socket
 
 from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
@@ -46,7 +48,10 @@ def switch_light(parent, busy):
     return True
 
 if __name__ == "__main__":
-
+    logger = logging.getLogger("OPC-UA-Server_Logger")
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+    logger.info("Starting OPC-UA Server on host: {}"
+                .format(socket.gethostname()))
     # setup our server
     server = Server()
     url = "opc.tcp://0.0.0.0:4840/freeopcua/server"
@@ -78,7 +83,7 @@ if __name__ == "__main__":
     # Start the server
     server.start()
 
-    print("OPCUA - Pixtend - Server started at {}".format(url))
+    logger.info("OPCUA - Pixtend - Server started at {}".format(url))
 
     try:
         # Assign random values to the parameters
@@ -95,7 +100,7 @@ if __name__ == "__main__":
                conbelt_moving.set_value(False)
 
             # set the random values inside the node
-            # print("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance) + "   Server-Time: " + str(server_time.get_value()))
+            logger.debug("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance) + "   Server-Time: " + str(server_time.get_value()))
             server_time.set_value(TIME)
             conbelt_state.set_value(state)
             conbelt_dist.set_value(distance)
@@ -103,7 +108,7 @@ if __name__ == "__main__":
             # sleep 2 seconds
             time.sleep(2)
     except KeyboardInterrupt:
-            print("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
+            logger.info("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
     finally:
         #close connection, remove subcsriptions, etc
         server.stop()

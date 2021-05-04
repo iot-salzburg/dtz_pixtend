@@ -1,0 +1,14 @@
+[Unit]
+Description=OPC-UA Server PiXtend
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python /home/pi/dtz_pixtend/opc_ua_server_pixtend.py
+WorkingDirectory=/home/pi/dtz_pixtend
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
