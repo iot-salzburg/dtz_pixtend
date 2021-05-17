@@ -58,23 +58,22 @@ if __name__ == "__main__":
     server.set_endpoint(url)
 
     # setup our own namespace
-    uri = "https://github.com/iot-salzburg/dtz_pixtend"
-    idx = server.register_namespace(uri)
+    server.register_namespace("ns=2")
 
 
     # get Objects node, this is where we should put our nodes
     objects = server.get_objects_node()
 
     # Add a parameter object to the address space
-    conveyorbelt_object = objects.add_object(idx, "ConveyorBelt")
+    conveyorbelt_object = objects.add_object("ns=2; i=1", "ConveyorBelt")
 
     # Parameters - Addresspsace, Name, Initial Value
-    server_time = conveyorbelt_object.add_variable(idx, "ServerTime", 0)
-    mover = conveyorbelt_object.add_method(idx, "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
-    busy_light = conveyorbelt_object.add_method(idx, "SwitchBusyLight", switch_light, [ua.VariantType.Boolean] , [ua.VariantType.Boolean])
-    conbelt_state = conveyorbelt_object.add_variable(idx, "ConBeltState", "init")
-    conbelt_dist = conveyorbelt_object.add_variable(idx, "ConBeltDist", 0.0)
-    conbelt_moving = conveyorbelt_object.add_variable(idx, "ConBeltMoving", False)
+    server_time = conveyorbelt_object.add_variable("ns=2; i=2", "ServerTime", 0)
+    mover = conveyorbelt_object.add_method("ns=2; i=3", "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
+    busy_light = conveyorbelt_object.add_method("ns=2; i=7", "SwitchBusyLight", switch_light, [ua.VariantType.Boolean] , [ua.VariantType.Boolean])
+    conbelt_state = conveyorbelt_object.add_variable("ns=2; i=10", "ConBeltState", "init")
+    conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", 0.0)
+    conbelt_moving = conveyorbelt_object.add_variable("ns=2; i=12", "ConBeltMoving", False)
 
     # Set parameters writable by clients
     server_time.set_writable()
