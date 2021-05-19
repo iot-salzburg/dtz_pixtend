@@ -18,12 +18,14 @@ import time
 import logging
 import socket
 
+#from ConveyorBeltDummy import ConveyorBeltDummy
 from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
 import datetime
 import time
 import threading
 
+#conbelt = ConveyorBeltDummy()
 conbelt = ConveyorBeltX()
 
 def move_belt_core(direction, distance):
