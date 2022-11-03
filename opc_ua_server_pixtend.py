@@ -18,14 +18,13 @@ import time
 import logging
 import socket
 
-#from ConveyorBeltDummy import ConveyorBeltDummy
+#from ConveyorBeltDummy import ConveyorBeltDummy as ConveyorBeltX
 from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
 import datetime
 import time
 import threading
 
-#conbelt = ConveyorBeltDummy()
 conbelt = ConveyorBeltX()
 
 def move_belt_core(direction, distance):
@@ -51,7 +50,7 @@ def switch_light(parent, busy):
 
 if __name__ == "__main__":
     logger = logging.getLogger("OPC-UA-Server_Logger")
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
     logger.info("Starting OPC-UA Server on host: {}"
                 .format(socket.gethostname()))
     # setup our server
@@ -76,6 +75,7 @@ if __name__ == "__main__":
     conbelt_state = conveyorbelt_object.add_variable("ns=2; i=10", "ConBeltState", "init")
     conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", 0.0)
     conbelt_moving = conveyorbelt_object.add_variable("ns=2; i=12", "ConBeltMoving", False)
+    conbelt_totaldist = conveyorbelt_object.add_variable("ns=2; i=13", "ConBeltTotalDist", 0.0)
 
     # Set parameters writable by clients
     server_time.set_writable()
@@ -94,6 +94,8 @@ if __name__ == "__main__":
                 state = f.read()
             with open("distance.log") as f:
                 distance = f.read()
+            with open("total_distance.log") as f:
+                total_distance = float(f.read())
 
             if state != "init" and state != "stop" and state != "halt":
                conbelt_moving.set_value(True)
@@ -101,15 +103,18 @@ if __name__ == "__main__":
                conbelt_moving.set_value(False)
 
             # set the random values inside the node
-            logger.debug("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance) + "   Server-Time: " + str(server_time.get_value()))
+            logger.debug("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance)+ "   Belt-Total Distance: " + str(total_distance) + "   Server-Time: " + str(server_time.get_value()))
             server_time.set_value(TIME)
             conbelt_state.set_value(state)
             conbelt_dist.set_value(distance)
+            conbelt_totaldist.set_value(total_distance)
 
             # sleep 2 seconds
             time.sleep(2)
     except KeyboardInterrupt:
-            logger.info("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
+        logger.info("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
+    except Exception as ex:
+        logger.error(ex)
     finally:
         #close connection, remove subcsriptions, etc
         server.stop()

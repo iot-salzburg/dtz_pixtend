@@ -21,6 +21,7 @@ class ConveyorBeltX:
         self.shotstate = 0
         self.state = "init"
         self.distance = 0.0
+        self.total_distance = 0.0
 
         # PiXtend Control Object
         self.pixtend = PiXtendV2S()
@@ -76,6 +77,10 @@ class ConveyorBeltX:
         with open("distance.log", "w") as f:
             f.write(str(distance))
 
+    def write_total_distance(self, total_distance):
+        with open("total_distance.log", "w") as f:
+            f.write(str(total_distance))
+
     def busy_light(self, busy):
         if busy is True:
             self.pixtend.relay0 = True                   # Red light ON & Green light OFF
@@ -128,6 +133,10 @@ class ConveyorBeltX:
                 self.write_distance(self.distance)
 
             sleep(0.1)
+
+        with open("total_distance.log") as f:
+            self.total_distance = float(f.read()) + abs(self.distance)
+        self.write_total_distance(self.total_distance)
         return True
 
     def move_left_for(self, distance=0):
