@@ -24,6 +24,7 @@ from opcua import ua, uamethod, Server
 import datetime
 import time
 import threading
+import traceback
 
 conbelt = ConveyorBeltX()
 
@@ -96,7 +97,7 @@ if __name__ == "__main__":
             with open("distance.log") as f:
                 distance = f.read()
             with open("total_distance.log") as f:
-                total_distance = float(f.read())
+                total_distance = f.read()
 
             if state != "init" and state != "stop" and state != "halt":
                 conbelt_moving.set_value(True)
@@ -115,6 +116,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("\nCtrl-C pressed. OPCUA - Pixtend - Server stopped at {}".format(url))
     except Exception as ex:
+        traceback.print_exc()
         logger.error(ex)
     finally:
         #close connection, remove subcsriptions, etc
