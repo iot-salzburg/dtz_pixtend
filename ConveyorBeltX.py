@@ -9,14 +9,16 @@
 #
 # class to control a conveyor belt with an stepper motor via the PiXtend Hardware
 
-from time import sleep
-import sys
 from pixtendv2s import PiXtendV2S
 import threading
+import logging
+import time
 
 
 class ConveyorBeltX:
     def __init__(self):
+
+        self.logger = logging.getLogger(__name__)
 
         self.shotstate = 0
         self.state = "init"
@@ -118,68 +120,50 @@ class ConveyorBeltX:
         self.pixtend.pwm0_ctrl0 = 0b01100011         # PWM Channels A & B - OFF
         #self.pixtend.relay0 = False                  # Red light OFF & Green light ON
 
-    def wait_for_it(self, time):
+    def wait_for_it(self, distance):
+        with open("total_distance.log") as f:
+            self.total_distance = float(f.read())
         init_state = self.state
+        traveltime = distance/self.velocity
         was_interrrupted = False
-        for _ in range(int(10*time)):
+        self.logger.info("start moving %sm to %s in %ss", distance, init_state, traveltime)
+        starttime = prevtime = time.time()
+        while prevtime < (starttime + traveltime):
+            time.sleep(0.1)
+            currenttime = time.time()
+            looptime = currenttime-prevtime
+            currentdistance = looptime*self.velocity
+            self.logger.debug("moved %sm to %s in %ss", currentdistance, init_state, looptime)
             if self.state != init_state:
                 was_interrrupted = True
                 break
+
             if init_state == "left":
-                self.distance += 0.1*self.velocity
+                self.distance += currentdistance
                 self.write_distance(self.distance)
+                self.total_distance += currentdistance
+                self.write_total_distance(self.total_distance)
             elif init_state == "right":
-                self.distance -= 0.1*self.velocity
+                self.distance -= currentdistance
                 self.write_distance(self.distance)
+                self.total_distance += currentdistance
+                self.write_total_distance(self.total_distance)
 
-            sleep(0.1)
+            prevtime = currenttime
 
-        with open("total_distance.log") as f:
-            self.total_distance = float(f.read()) + abs(self.distance)
-        self.write_total_distance(self.total_distance)
+        self.logger.info("finished move of %sm to %s in %ss", distance, init_state, traveltime)
         return True
 
     def move_left_for(self, distance=0):
         self.move_left()
-        time = distance/self.velocity
-        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(time,))
+        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
         waiting.start()
         waiting.join()
         self.halt()
 
     def move_right_for(self, distance=0):
         self.move_right()
-        time = distance/self.velocity
-        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(time,))
+        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
         waiting.start()
         waiting.join()
         self.halt()
-
-    def manual_control(self, showstate):
-        self.showstate = showstate
-        manual.start()
-
-    def manual_control_core(self):
-        try:
-            while True:
-                oldstate = self.state
-                if not self.pixtend.gpio0:
-                    self.move_left()
-                    self.distance += 0.1*self.velocity
-                    self.write_distance(self.distance)
-                elif not self.pixtend.gpio1:
-                    self.move_right()
-                    self.distance -= 0.1*self.velocity
-                    self.write_distance(self.distance)
-                else:
-                    self.halt()
-                if oldstate != self.state and self.showstate == 1:
-                    print(self.state)
-
-                sleep(.1)
-
-        except KeyboardInterrupt:
-            print("\nCtrl-C pressed.  Stopping PIGPIO and exiting...")
-        finally:
-            self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
-            self.pixtend = None
