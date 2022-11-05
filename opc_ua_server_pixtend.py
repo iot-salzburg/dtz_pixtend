@@ -49,8 +49,9 @@ def switch_light(parent, busy):
     return True
 
 if __name__ == "__main__":
-    logger = logging.getLogger("OPC-UA-Server_Logger")
-    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s %(name)s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+    logging.getLogger("opcua.server").setLevel(logging.ERROR)
     logger.info("Starting OPC-UA Server on host: {}"
                 .format(socket.gethostname()))
     # setup our server
@@ -98,9 +99,9 @@ if __name__ == "__main__":
                 total_distance = float(f.read())
 
             if state != "init" and state != "stop" and state != "halt":
-               conbelt_moving.set_value(True)
+                conbelt_moving.set_value(True)
             else:
-               conbelt_moving.set_value(False)
+                conbelt_moving.set_value(False)
 
             # set the random values inside the node
             logger.debug("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance)+ "   Belt-Total Distance: " + str(total_distance) + "   Server-Time: " + str(server_time.get_value()))
