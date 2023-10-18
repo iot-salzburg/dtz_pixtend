@@ -21,6 +21,7 @@ from opcua import Client
 desired_distance = 0.55 # distance in meters to drive the belt
 belt_velocity = 0.05428 # velocity of the belt in m/s (5.5cm/s)
 timebuffer = 3          # time buffer for the wait loops after method call. wifi istn that fast
+iterations = 10
 
 if __name__ == "__main__":
 
@@ -31,10 +32,11 @@ if __name__ == "__main__":
 
         # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
         root = client.get_root_node()
-        print("Objects node is: ", root)
+        print("Root node is: ", root)
 
         # Node objects have methods to read and write node attributes as well as browse or populate address space
         print("Children of root are: ", root.get_children())
+        print("Objects node is: ", root.get_children()[0])
 
         # get a specific node knowing its node id
         #var = client.get_node(ua.NodeId(1002, 2))
@@ -46,21 +48,27 @@ if __name__ == "__main__":
         #var.set_value(3.9) # set node value using implicit data type
 
         # Now getting a variable node using its browse path
-        server_time = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ServerTime"])
-        object1 = root.get_child(["0:Objects", "2:ConveyorBelt"])
-        mover = root.get_child(["0:Objects", "2:ConveyorBelt", "2:MoveBelt"])
-        conbelt_state =  root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltState"])
-        conbelt_dist = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltDist"]) 
+        #server_time = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ServerTime"])
+        server_time = client.get_node("ns=2;i=2")
+        print ("Server Time: ", server_time.get_value())
+        conbelt = client.get_node("ns=2;i=1")
+        #mover = root.get_child(["0:Objects", "2:ConveyorBelt", "2:MoveBelt"])
+        mover = client.get_node("ns=2;i=3")
+        #conbelt_state =  root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltState"])
+        conbelt_state = client.get_node("ns=2;i=10")
+        #conbelt_dist = root.get_child(["0:Objects", "2:ConveyorBelt", "2:ConBeltDist"]) 
+        conbelt_dist = client.get_node("ns=2;i=11")
+        conbelt_total_dist = client.get_node("ns=2;i=13")
 
         def move_belt(direction, distance):
-            object1.call_method("2:MoveBelt", direction, desired_distance)  # drive 55cm right
+            conbelt.call_method(mover,direction, desired_distance)  # drive 55cm right
             print("called move_belt to " + str(direction) + " for " + str(desired_distance) + "m")
             print("sleeping...")
             for i in range(0, (int(desired_distance/belt_velocity)*10)+timebuffer):
                 time.sleep(0.1)
 
 
-        while True:
+        for _ in range(iterations):
             move_belt("right", 0.55)
             move_belt("left", 0.55)
 

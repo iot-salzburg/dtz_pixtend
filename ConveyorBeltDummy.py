@@ -118,3 +118,35 @@ class ConveyorBeltDummy:
         waiting.start()
         waiting.join()
         self.halt()
+
+    def manual_control(self, showstate):
+        self.showstate = showstate
+        manual.start()
+
+    def manual_control_core(self):
+        try:
+            while True:
+                oldstate = self.state
+                if not self.pixtend.gpio0:
+                    self.move_left()
+                    self.distance += 0.1*self.velocity
+                    self.write_distance(self.distance)
+                elif not self.pixtend.gpio1:
+                    self.move_right()
+                    self.distance -= 0.1*self.velocity
+                    self.write_distance(self.distance)
+                else:
+                    self.halt()
+                if oldstate != self.state and self.showstate == 1:
+                    print(self.state)
+
+                sleep(.1)
+
+        except KeyboardInterrupt:
+            print("\nCtrl-C pressed.  Stopping PIGPIO and exiting...")
+        finally:
+            self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
+            self.pixtend = None
+
+    def reset_totaldistance(self, totaldist=0):
+        self.write_total_distance(totaldist)

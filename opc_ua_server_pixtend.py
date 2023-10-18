@@ -18,8 +18,8 @@ import time
 import logging
 import socket
 
-#from ConveyorBeltDummy import ConveyorBeltDummy as ConveyorBeltX
-from ConveyorBeltX import ConveyorBeltX
+from ConveyorBeltDummy import ConveyorBeltDummy as ConveyorBeltX
+#from ConveyorBeltX import ConveyorBeltX
 from opcua import ua, uamethod, Server
 import datetime
 import time
@@ -49,6 +49,10 @@ def switch_light(parent, busy):
     conbelt.busy_light(busy)
     return True
 
+@uamethod
+def reset_totaldist(parent):
+    conbelt.reset_totaldistance(0)
+
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s %(name)s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
@@ -73,6 +77,7 @@ if __name__ == "__main__":
     # Parameters - Addresspsace, Name, Initial Value
     server_time = conveyorbelt_object.add_variable("ns=2; i=2", "ServerTime", 0)
     mover = conveyorbelt_object.add_method("ns=2; i=3", "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
+    resetTotalDistance = conveyorbelt_object.add_method("ns=2; i=14", "ResetTotalDistance", reset_totaldist)
     busy_light = conveyorbelt_object.add_method("ns=2; i=7", "SwitchBusyLight", switch_light, [ua.VariantType.Boolean] , [ua.VariantType.Boolean])
     conbelt_state = conveyorbelt_object.add_variable("ns=2; i=10", "ConBeltState", "init")
     conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", 0.0)
