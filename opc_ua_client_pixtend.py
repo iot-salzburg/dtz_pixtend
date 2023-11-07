@@ -70,7 +70,11 @@ if __name__ == "__main__":
 
         for _ in range(iterations):
             move_belt("right", 0.55)
+            print("movement pause")
+            time.sleep(2)
             move_belt("left", 0.55)
+            print("movement pause")
+            time.sleep(2)
 
     except KeyboardInterrupt:
         print("\nClient stopped")

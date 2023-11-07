@@ -19,14 +19,29 @@ class ConveyorBeltDummy:
         self.logger = logging.getLogger(__name__)
 
         self.shotstate = 0
-        self.state = "init"
+        self.state = "init" # possible states: "left", "right", "halt", "stop", "fail"
         self.distance = 0.0
         self.total_distance = 0.0
+        self.service_interval = 2 # maintenance is required, if the total distance exceeds this number
+        self.sim_breakdown = 3    # we simulate a breakdown, if the total distance exceeds this number
+        self.maintenance_required = False
 
 
         self.velocity = 0.05428                 # Velocity of the belt im m/s (5.5cm/s)
 
+        try:
+            with open("state.log") as f:
+                self.state = f.read()
+            with open("distance.log") as f:
+                self.distance = float(f.read())
+            with open("total_distance.log") as f:
+                self.total_distance = float(f.read())
+                if self.total_distance > self.service_interval:
+                    self.maintenance_required = True
 
+            self.logger.info("restored conveyor belt (state, distance, total_distance) ({}, {}, {})".format(self.state, self.distance, self.total_distance))
+        except:
+            self.logger.info("could not restore state, creating new")
 
         with open("state.log", "w") as f:
             f.write(self.state)
@@ -67,6 +82,14 @@ class ConveyorBeltDummy:
         self.state = "halt"
         self.write_state(self.state)
 
+    def init(self):
+        self.state = "init"
+        self.write_state(self.state)
+
+    def fail(self):
+        self.state = "fail"
+        self.write_state(self.state)
+
     def stop(self):
         self.state = "stop"
         self.write_state(self.state)
@@ -77,7 +100,7 @@ class ConveyorBeltDummy:
         init_state = self.state
         traveltime = distance/self.velocity
         was_interrrupted = False
-        self.logger.info("start moving %sm to %s in %ss", distance, init_state, traveltime)
+        self.logger.info("start moving %sm to %s for %ss", distance, init_state, traveltime)
         starttime = prevtime = time.time()
         while prevtime < (starttime + traveltime):
             time.sleep(0.1)
@@ -88,6 +111,10 @@ class ConveyorBeltDummy:
             if self.state != init_state:
                 was_interrrupted = True
                 break
+
+            if init_state == "fail":
+                self.logger.error("can't move in fail state, reset total dist!")
+                return False
 
             if init_state == "left":
                 self.distance += currentdistance
@@ -100,53 +127,41 @@ class ConveyorBeltDummy:
                 self.total_distance += currentdistance
                 self.write_total_distance(self.total_distance)
 
+            if self.total_distance > self.service_interval:
+                self.maintenance_required = True
+            else:
+                self.maintenance_required =  False
+
+            if self.total_distance > self.sim_breakdown:
+                self.fail()
+                self.logger.error("stopped move due to failure at distance %sm", self.total_distance)
+                return False
+
             prevtime = currenttime
 
         self.logger.info("finished move of %sm to %s in %ss", distance, init_state, traveltime)
+        self.halt()
         return True
 
     def move_left_for(self, distance=0):
-        self.move_left()
-        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
-        waiting.start()
-        waiting.join()
-        self.halt()
+        if self.state == "halt" or self.state == "init":
+            self.logger.debug("spawning thread for move_left")
+            self.move_left()
+            waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
+            waiting.start()
+            waiting.join()
 
     def move_right_for(self, distance=0):
-        self.move_right()
-        waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
-        waiting.start()
-        waiting.join()
-        self.halt()
-
-    def manual_control(self, showstate):
-        self.showstate = showstate
-        manual.start()
-
-    def manual_control_core(self):
-        try:
-            while True:
-                oldstate = self.state
-                if not self.pixtend.gpio0:
-                    self.move_left()
-                    self.distance += 0.1*self.velocity
-                    self.write_distance(self.distance)
-                elif not self.pixtend.gpio1:
-                    self.move_right()
-                    self.distance -= 0.1*self.velocity
-                    self.write_distance(self.distance)
-                else:
-                    self.halt()
-                if oldstate != self.state and self.showstate == 1:
-                    print(self.state)
-
-                sleep(.1)
-
-        except KeyboardInterrupt:
-            print("\nCtrl-C pressed.  Stopping PIGPIO and exiting...")
-        finally:
-            self.pixtend.close()   # cleanup function - closes all PiXtend's internal variables, objects, drivers, communication, etc
-            self.pixtend = None
+        if self.state == "halt" or self.state == "init":
+            self.logger.debug("spawning thread for move_right")
+            self.move_right()
+            waiting = threading.Thread(name='waiter', target=self.wait_for_it, args=(distance,))
+            waiting.start()
+            waiting.join()
 
     def reset_totaldistance(self, totaldist=0):
+        if totaldist < self.service_interval:
+            self.maintenance_required = False
+
+        self.init()
         self.write_total_distance(totaldist)

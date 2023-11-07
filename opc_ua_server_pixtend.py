@@ -26,6 +26,7 @@ import time
 import threading
 import traceback
 
+# setup conveyor belt
 conbelt = ConveyorBeltX()
 
 def move_belt_core(direction, distance):
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     logging.getLogger("opcua.server").setLevel(logging.ERROR)
     logger.info("Starting OPC-UA Server on host: {}"
                 .format(socket.gethostname()))
+    
     # setup our server
     server = Server()
     url = "opc.tcp://0.0.0.0:4840/freeopcua/server"
@@ -79,10 +81,12 @@ if __name__ == "__main__":
     mover = conveyorbelt_object.add_method("ns=2; i=3", "MoveBelt", move_belt, [ua.VariantType.String, ua.VariantType.Float], [ua.VariantType.Boolean])
     resetTotalDistance = conveyorbelt_object.add_method("ns=2; i=14", "ResetTotalDistance", reset_totaldist)
     busy_light = conveyorbelt_object.add_method("ns=2; i=7", "SwitchBusyLight", switch_light, [ua.VariantType.Boolean] , [ua.VariantType.Boolean])
-    conbelt_state = conveyorbelt_object.add_variable("ns=2; i=10", "ConBeltState", "init")
-    conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", 0.0)
+    conbelt_state = conveyorbelt_object.add_variable("ns=2; i=10", "ConBeltState", conbelt.state)
+    conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", conbelt.distance)
     conbelt_moving = conveyorbelt_object.add_variable("ns=2; i=12", "ConBeltMoving", False)
-    conbelt_totaldist = conveyorbelt_object.add_variable("ns=2; i=13", "ConBeltTotalDist", 0.0)
+    conbelt_totaldist = conveyorbelt_object.add_variable("ns=2; i=13", "ConBeltTotalDist", conbelt.total_distance)
+    conbelt_service_order_notification = conveyorbelt_object.add_variable("ns=2; i=15", "ConBeltServiceOrderNotification", conbelt.maintenance_required)
+    conbelt_failure = conveyorbelt_object.add_variable("ns=2; i=16", "ConBeltFailure", conbelt.state == "fail")
 
     # Set parameters writable by clients
     server_time.set_writable()
@@ -94,27 +98,25 @@ if __name__ == "__main__":
     logger.info("OPCUA - Pixtend - Server started at {}".format(url))
 
     try:
-        # Assign random values to the parameters
         while True:
             TIME = datetime.datetime.now()  # current time
-            with open("state.log") as f:
-                state = f.read()
-            with open("distance.log") as f:
-                distance = f.read()
-            with open("total_distance.log") as f:
-                total_distance = f.read()
-
-            if state != "init" and state != "stop" and state != "halt":
+            if conbelt.state != "init" and conbelt.state != "stop" and conbelt.state != "halt" and conbelt.state != "fail":
                 conbelt_moving.set_value(True)
             else:
                 conbelt_moving.set_value(False)
 
+            if conbelt.state == "fail":
+                conbelt_failure.set_value(True)
+            else:
+                conbelt_failure.set_value(False)
+
             # set the random values inside the node
-            logger.debug("Belt-State: " + str(state) + "   Belt-Distance: " + str(distance)+ "   Belt-Total Distance: " + str(total_distance) + "   Server-Time: " + str(server_time.get_value()))
+            logger.debug("Belt-State: " + str(conbelt.state) + "   Belt-Distance: " + str(conbelt.distance)+ "   Belt-Total Distance: " + str(conbelt.total_distance) + "   Server-Time: " + str(server_time.get_value()))
             server_time.set_value(TIME)
-            conbelt_state.set_value(state)
-            conbelt_dist.set_value(distance)
-            conbelt_totaldist.set_value(total_distance)
+            conbelt_state.set_value(conbelt.state)
+            conbelt_dist.set_value(conbelt.distance)
+            conbelt_totaldist.set_value(conbelt.total_distance)
+            conbelt_service_order_notification.set_value(conbelt.maintenance_required)
 
             # sleep 2 seconds
             time.sleep(2)
