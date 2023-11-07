@@ -113,7 +113,7 @@ class ConveyorBeltDummy:
                 break
 
             if init_state == "fail":
-                self.logger.error("can't move in fail state, reset total dist!")
+                self.logger.info("can't move in fail state, reset total dist!")
                 return False
 
             if init_state == "left":
@@ -134,7 +134,7 @@ class ConveyorBeltDummy:
 
             if self.total_distance > self.sim_breakdown:
                 self.fail()
-                self.logger.error("stopped move due to failure at distance %sm", self.total_distance)
+                self.logger.info("stopped move due to failure at distance %sm", self.total_distance)
                 return False
 
             prevtime = currenttime
