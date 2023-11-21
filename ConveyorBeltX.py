@@ -217,3 +217,4 @@ class ConveyorBeltX:
 
         self.init()
         self.write_total_distance(totaldist)
+        self.write_distance(totaldist)
