@@ -53,6 +53,8 @@ def switch_light(parent, busy):
 @uamethod
 def reset_totaldist(parent):
     conbelt.reset_totaldistance(0)
+    conbelt.total_distance = 0
+    conbelt.distance = 0
 
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
