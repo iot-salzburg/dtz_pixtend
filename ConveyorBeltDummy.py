@@ -23,7 +23,7 @@ class ConveyorBeltDummy:
         self.distance = 0.0
         self.total_distance = 0.0
         self.service_interval = 2 # maintenance is required, if the total distance exceeds this number
-        self.sim_breakdown = 3    # we simulate a breakdown, if the total distance exceeds this number
+        self.sim_breakdown = 10    # we simulate a breakdown, if the total distance exceeds this number
         self.maintenance_required = False
 
 
