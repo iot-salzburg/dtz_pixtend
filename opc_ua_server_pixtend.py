@@ -87,7 +87,7 @@ if __name__ == "__main__":
     conbelt_dist = conveyorbelt_object.add_variable("ns=2; i=11", "ConBeltDist", conbelt.distance)
     conbelt_moving = conveyorbelt_object.add_variable("ns=2; i=12", "ConBeltMoving", False)
     conbelt_totaldist = conveyorbelt_object.add_variable("ns=2; i=13", "ConBeltTotalDist", conbelt.total_distance)
-    conbelt_service_order_notification = conveyorbelt_object.add_variable("ns=2; i=15", "ConBeltServiceOrderNotification", conbelt.maintenance_required)
+    conbelt_service_order_notification = conveyorbelt_object.add_variable("ns=2; i=15", "ConBeltServiceOrderRequest", conbelt.maintenance_required)
     conbelt_failure = conveyorbelt_object.add_variable("ns=2; i=16", "ConBeltFailure", conbelt.state == "fail")
 
     # Set parameters writable by clients
